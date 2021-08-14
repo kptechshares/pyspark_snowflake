@@ -38,8 +38,6 @@ if __name__ == "__main__":
     # Gets the version
     ctx = snowflake.connector.connect(
         user='kptechshares',
-        # password='Midhuna@123',
-        # base64.urlsafe_b64encode('Midhuna@123'.encode('UTF-8')).decode('ascii')
         password=base64.urlsafe_b64decode('Encrypt your password and past here'.encode('UTF-8')).decode('ascii'),
         account='past your account name till the region, no need to have snowflakecomputing.com'
     )
