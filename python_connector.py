@@ -1,48 +1,49 @@
 import snowflake.connector
 import os
 import base64
+from sqlalchemy import create_engine
+from snowflake.sqlalchemy import URL
+import pandas as pd
 
-
-def read_data(cs):
+def read_data(connection):
     try:
-        # cs.execute("USE DATABASE kp_database")
-        # cs.execute("PUT file:///C:\\Users\\USER\\Documents\\Datasets\\Datasets\\movies\\u_user.csv @%u_user_table_stage")
-        # con.cursor().execute("COPY INTO testtable")
-        cs.execute("SELECT current_version()")
-        one_row = cs.fetchone()
-        print("Printing Version of current SnowFlake",one_row[0])
+        query='''select * from kpdb.public.employee'''
+        data = pd.read_sql(query, connection)
+        print(type(data))
+        print("####### Reading Completed #############")
+        return data
     finally:
-        cs.close()
+        connection.close()
 
-
-def transform_data(cs):
+def transform_data(data):
     try:
-        # cs.execute("USE DATABASE kp_database")
-        # cs.execute("PUT file:///C:\\Users\\USER\\Documents\\Datasets\\Datasets\\movies\\u_user.csv @%u_user_table_stage")
-        # con.cursor().execute("COPY INTO testtable")
-        print("This block of code for transforming the data")
+        data['name']=data['name'].str.upper()
+        print(type(data))
+        print(data)
+        return data
     finally:
-        cs.close()
+        connection.close()
 
-def write_data(cs):
+def write_data(data):
     try:
-        # cs.execute("USE DATABASE kp_database")
-        # cs.execute("PUT file:///C:\\Users\\USER\\Documents\\Datasets\\Datasets\\movies\\u_user.csv @%u_user_table_stage")
-        # con.cursor().execute("COPY INTO testtable")
-        print("This block of code for loading the data")
+        data.to_sql('kp_python', engine, if_exists='replace', index=False, index_label=None)
     finally:
-        cs.close()
+        connection.close()
 
 
+        
 if __name__ == "__main__":
     # Gets the version
-    ctx = snowflake.connector.connect(
-        user='kptechshares',
-        password=base64.urlsafe_b64decode('Encrypt your password and past here'.encode('UTF-8')).decode('ascii'),
-        account='past your account name till the region, no need to have snowflakecomputing.com'
+    url = URL(
+        user='***********',
+        password=base64.urlsafe_b64decode('*********************'.encode('UTF-8')).decode('ascii'),
+        account='**********************',
+        database = 'kpdb',
+        schema = 'public',
     )
-    cs = ctx.cursor()
-    read_data(cs)
-    transform_data(cs)
-    write_data(cs)
-    ctx.close()
+    engine = create_engine(url)
+    connection = engine.connect()
+    input_data = read_data(connection)
+    final_data = transform_data(input_data)
+    write_data(final_data)
+    
